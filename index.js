@@ -35,7 +35,7 @@
                 var line = lines[i];
 
                 if (line.indexOf('diff --git') === 0) {
-                    var filesStr = line.slice(11);
+                    var filesStr = line.slice(11); // remove "diff -git "
                     var oldPath = null;
                     var newPath = null;
 
@@ -44,7 +44,24 @@
                         case -1:
                             var segs = filesStr.split(' ');
                             oldPath = segs[0].slice(2);
-                            newPath = segs[1].slice(2);
+
+                            if(segs.length > 2) {
+                                segs.shift(); // remove first part of oldPath from array
+                                // adds every segment to oldPath until first appearance of b/, from then only to newPath
+                                segs.forEach(seg => {
+                                    if (seg.indexOf('b/') === -1) {
+                                        if (newPath === null) {
+                                            oldPath.concat(' ', seg);
+                                        } else {
+                                            newPath.concat(' ', seg);
+                                        }
+                                    } else {
+                                        newPath = seg.slice(2);
+                                    }
+                                });
+                            } else {
+                                newPath = segs[1].slice(2);
+                            }
                             break;
 
                         case 0:
